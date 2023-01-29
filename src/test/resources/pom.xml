@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.r7c.maven.tools.test.plugin</groupId>
+    <artifactId>basic-test</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>Test ddlgen simple</name>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jakarta.persistence.api.version>3.1.0</jakarta.persistence.api.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <ojdbc11.version>21.8.0.0</ojdbc11.version>
+        <postgresql.version>42.5.1</postgresql.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>${jakarta.persistence.api.version}</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <!-- set "prebuilt" entity classes (needed by hibernate) for plugin test-->
+        <outputDirectory>../../test-classes</outputDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.r7c.maven.tools</groupId>
+                <artifactId>ddlgen-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-ddl</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- Specify the ddl-gen parameters -->
+                    <outputDirectory>target/generated-ddl</outputDirectory>
+                    <xmlMappingDirectories>
+                        <xmlMappingDirectory>src/test/resources/hbm</xmlMappingDirectory>
+                        <xmlMappingDirectory>src/test/resources/orm</xmlMappingDirectory>
+                    </xmlMappingDirectories>
+                    <packages>
+                        <package>org.r7c.maven.tools.model.annotation</package>
+                    </packages>
+                    <dialects>
+                        <dialect>org.hibernate.dialect.DerbyDialect</dialect>
+                        <dialect>org.hibernate.dialect.H2Dialect</dialect>
+                        <dialect>org.hibernate.dialect.MySQLDialect</dialect>
+                        <dialect>org.hibernate.dialect.OracleDialect</dialect>
+                        <dialect>org.hibernate.dialect.PostgreSQLDialect</dialect>
+                    </dialects>
+                    <scriptFormat>true</scriptFormat>
+                    <scriptLineDelimiter>;</scriptLineDelimiter>
+                    <auditTableSuffix>_AUD</auditTableSuffix>
+                    <filenameSuffixCreate>-create.ddl</filenameSuffixCreate>
+                    <filenameSuffixDrop>-drop.ddl</filenameSuffixDrop>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.oracle.database.jdbc</groupId>
+                        <artifactId>ojdbc11</artifactId>
+                        <version>${ojdbc11.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+

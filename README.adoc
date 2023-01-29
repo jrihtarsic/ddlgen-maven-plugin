@@ -1,0 +1,99 @@
+= Database schema generator maven plugin
+Rihtarsic Joze
+1.0, 12.12.2022: Initial documentation
+:toc:
+:icons: font
+
+==  Database Schema Generator Maven Plugin
+
+The Plugin is used when you want to generate database schema at build-time in a project's directory.
+The Plugin is based on Hibernate ORM and can generate database schema for all supported hibernate database dialects!
+
+===   Goals Overview
+
+The Clean Plugin only has one goal.
+
+ - *generate-ddl*: attempts to generate database schema DDL scripts from a project's JPA entity classes, hibernate XML HBM files, or JPA entity mapping files.
+
+===  Usage
+
+The Plugin, as the name implies, attempts to generate the database DDL script files for creating and dropping the database schema objects.
+
+
+==== Cleaning a Maven project using the command-line
+
+The Plugin can be called to execute in the command-line without any additional configurations. By default it generated DDL scripts
+from *.hbm.xml and *.orm.xml placed in resource folder:
+
+  ${project.resources[0].directory}/shared/hbm/
+
+The default database dialect is set to:
+
+    org.hibernate.dialect.DerbyDialect
+
+Like the other plugins, to run the Plugin, you use:
+
+      mvn ddlgen:generate-ddl
+
+where the first compile refers to the plugin's alias, and the second generate-ddl refers to the plugin goal.
+
+However, the Plugin is bound to lifecycyle phase called 'process-classes'.
+Thus, for simplicity, it can also be executed by using:
+
+      mvn compile
+
+The Plugin can be put into a project's pom.xml so that it gets executed everytime the project is built.
+Below is a sample pom.xml for running the Plugin everytime the project is built:
+
+.maven configuration example
+[source,xml]
+----
+<project>
+    [...]
+    <plugin>
+        <groupId>org.r7c.maven.tools.tools</groupId>
+        <artifactId>ddlgen-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>generate-ddl</goal>
+                </goals>
+            </execution>
+        </executions>
+        <configuration>
+            <!-- Specify the ddl-gen parameters -->
+            <outputDirectory>target/generated-ddl</outputDirectory>
+            <xmlMappingDirectories>
+                <xmlMappingDirectory>src/main/resources/hbm</xmlMappingDirectory>
+                <xmlMappingDirectory>src/main/resources/orm</xmlMappingDirectory>
+            </xmlMappingDirectories>
+            <packages>
+                <package>org.r7c.maven.tools.model.annotation</package>
+            </packages>
+            <dialects>
+                <dialect>org.hibernate.dialect.DerbyDialect</dialect>
+                <dialect>org.hibernate.dialect.H2Dialect</dialect>
+                <dialect>org.hibernate.dialect.MySQLDialect</dialect>
+                <dialect>org.hibernate.dialect.OracleDialect</dialect>
+                <dialect>org.hibernate.dialect.PostgreSQLDialect</dialect>
+            </dialects>
+        </configuration>
+        <dependencies>
+            <dependency>
+                <groupId>com.oracle.database.jdbc</groupId>
+                <artifactId>ojdbc11</artifactId>
+                <version>21.8.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.5.1</version>
+            </dependency>
+        </dependencies>
+    </plugin>
+  [...]
+</project>
+----
+
+
