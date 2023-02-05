@@ -46,8 +46,12 @@
                         <xmlMappingDirectory>src/test/resources/hbm</xmlMappingDirectory>
                         <xmlMappingDirectory>src/test/resources/orm</xmlMappingDirectory>
                     </xmlMappingDirectories>
+                    <xmlMappingSuffixes>
+                        <xmlMappingSuffix>.orm.xml</xmlMappingSuffix>
+                        <xmlMappingSuffix>.hbm.xml</xmlMappingSuffix>
+                    </xmlMappingSuffixes>
                     <packages>
-                        <package>org.r7c.maven.tools.model.annotation</package>
+                        <package>org.r7c.test.model.annotation</package>
                     </packages>
                     <dialects>
                         <dialect>org.hibernate.dialect.DerbyDialect</dialect>

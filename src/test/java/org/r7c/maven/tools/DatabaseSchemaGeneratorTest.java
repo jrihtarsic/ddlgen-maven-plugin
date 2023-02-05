@@ -1,19 +1,18 @@
 package org.r7c.maven.tools;
 
 
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.BuildPluginManager;
-import org.apache.maven.plugin.DefaultBuildPluginManager;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.plugin.testing.WithoutMojo;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import static org.r7c.maven.tools.DatabaseSchemaGenerator.*;
 
@@ -77,12 +76,32 @@ public class DatabaseSchemaGeneratorTest extends AbstractMojoTestCase {
 
         for (String dialect : dialects) {
             String dbName = dialect.substring(dialect.lastIndexOf('.') + 1, dialect.lastIndexOf("Dialect")).toLowerCase();
-            assertTrue(new File(outputDirectory, dbName + filenameSuffixCreate).exists());
-            assertTrue(new File(outputDirectory, dbName + filenameSuffixDrop).exists());
+            File fileCreate = new File(outputDirectory, dbName + filenameSuffixCreate);
+            File fileDrop = new File(outputDirectory, dbName + filenameSuffixDrop);
+            assertTrue(fileCreate.exists());
+            assertTrue(fileDrop.exists());
+            // assert table names in create and drop script files
+            assertFileContainStrings(fileCreate, Arrays.asList("EXAMPLE_MODEL_ANNOTATION", "EXAMPLE_MODEL_HBM", "SIMPLE_MODEL_ORM"));
+            assertFileContainStrings(fileDrop, Arrays.asList("EXAMPLE_MODEL_ANNOTATION", "EXAMPLE_MODEL_HBM", "SIMPLE_MODEL_ORM"));
         }
     }
 
-    public void tesGenerateComment() {
+    private static void assertFileContainStrings(File file, final List<String> findText) throws FileNotFoundException {
+        List<String> tokensToFind = new ArrayList<>(findText);
+
+        try (Scanner scanner = new Scanner(file)) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                tokensToFind = tokensToFind.stream().filter(token -> !StringUtils.containsIgnoreCase(line, token)).collect(Collectors.toList());
+                if (tokensToFind.isEmpty()) {
+                    return;
+                }
+            }
+        }
+        fail("Generated script [" + file.getAbsolutePath() + "] does not contain tokens [" + String.join(",", tokensToFind) + "]");
+    }
+
+    public void testGenerateComment() {
         DatabaseSchemaGenerator testInstance = new DatabaseSchemaGenerator();
         testInstance.application = "application-01";
         testInstance.schemaVersion = "version-01";
@@ -92,15 +111,6 @@ public class DatabaseSchemaGeneratorTest extends AbstractMojoTestCase {
         assertEquals("Script version: version-01, Application: application-01, Date: 01.12.2022", result);
     }
 
-
-    public static PluginDescriptor loadPluginDescriptor(Plugin plugin, MavenSession session)
-            throws Exception {
-
-        BuildPluginManager pluginManager = new DefaultBuildPluginManager();
-        return pluginManager.loadPlugin(plugin, session.getCurrentProject().getRemotePluginRepositories(),
-                session.getRepositorySession());
-
-    }
 
 }
 

@@ -6,8 +6,8 @@ Rihtarsic Joze
 
 ==  Database Schema Generator Maven Plugin
 
-The Plugin is used when you want to generate database schema at build-time in a project's directory.
-The Plugin is based on Hibernate ORM and can generate database schema for all supported hibernate database dialects!
+The purpose of the plugin is to generate database schema scripts from Java entity classes or from xml mappings (HBM or ORM).
+The Plugin is based on Hibernate ORM and can generate database schemas for all supported hibernate database dialects!
 
 ===   Goals Overview
 
@@ -22,25 +22,25 @@ The Plugin, as the name implies, attempts to generate the database DDL script fi
 
 ==== Cleaning a Maven project using the command-line
 
-The Plugin can be called to execute in the command-line without any additional configurations. By default it generated DDL scripts
+The Plugin can be called to execute in the command-line without any additional configurations. By default, it generated DDL scripts
 from *.hbm.xml and *.orm.xml placed in resource folder:
 
   ${project.resources[0].directory}/shared/hbm/
 
 The default database dialect is set to:
 
-    org.hibernate.dialect.DerbyDialect
+  org.hibernate.dialect.DerbyDialect
 
 Like the other plugins, to run the Plugin, you use:
 
-      mvn ddlgen:generate-ddl
+    mvn ddlgen:generate-ddl
 
 where the first compile refers to the plugin's alias, and the second generate-ddl refers to the plugin goal.
 
-However, the Plugin is bound to lifecycyle phase called 'process-classes'.
+However, the Plugin is bound to lifecycle phase called 'process-classes'.
 Thus, for simplicity, it can also be executed by using:
 
-      mvn compile
+    mvn compile
 
 The Plugin can be put into a project's pom.xml so that it gets executed everytime the project is built.
 Below is a sample pom.xml for running the Plugin everytime the project is built:
@@ -49,51 +49,182 @@ Below is a sample pom.xml for running the Plugin everytime the project is built:
 [source,xml]
 ----
 <project>
-    [...]
-    <plugin>
-        <groupId>org.r7c.maven.tools.tools</groupId>
-        <artifactId>ddlgen-maven-plugin</artifactId>
-        <version>1.0.0</version>
-        <executions>
-            <execution>
-                <goals>
-                    <goal>generate-ddl</goal>
-                </goals>
-            </execution>
-        </executions>
-        <configuration>
-            <!-- Specify the ddl-gen parameters -->
-            <outputDirectory>target/generated-ddl</outputDirectory>
-            <xmlMappingDirectories>
-                <xmlMappingDirectory>src/main/resources/hbm</xmlMappingDirectory>
-                <xmlMappingDirectory>src/main/resources/orm</xmlMappingDirectory>
-            </xmlMappingDirectories>
-            <packages>
-                <package>org.r7c.maven.tools.model.annotation</package>
-            </packages>
-            <dialects>
-                <dialect>org.hibernate.dialect.DerbyDialect</dialect>
-                <dialect>org.hibernate.dialect.H2Dialect</dialect>
-                <dialect>org.hibernate.dialect.MySQLDialect</dialect>
-                <dialect>org.hibernate.dialect.OracleDialect</dialect>
-                <dialect>org.hibernate.dialect.PostgreSQLDialect</dialect>
-            </dialects>
-        </configuration>
-        <dependencies>
-            <dependency>
-                <groupId>com.oracle.database.jdbc</groupId>
-                <artifactId>ojdbc11</artifactId>
-                <version>21.8.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>42.5.1</version>
-            </dependency>
-        </dependencies>
-    </plugin>
+  [...]
+  <plugin>
+    <groupId>org.r7c.maven.tools.tools</groupId>
+    <artifactId>ddlgen-maven-plugin</artifactId>
+    <version>1.0.0</version>
+    <executions>
+      <execution>
+        <goals>
+          <goal>generate-ddl</goal>
+        </goals>
+      </execution>
+    </executions>
+    <configuration>
+      <!-- Specify the ddl-gen parameters -->
+      <outputDirectory>target/generated-ddl</outputDirectory>
+      <xmlMappingDirectories>
+        <xmlMappingDirectory>src/main/resources/hbm</xmlMappingDirectory>
+        <xmlMappingDirectory>src/main/resources/orm</xmlMappingDirectory>
+      </xmlMappingDirectories>
+      <xmlMappingSuffixes>
+        <xmlMappingSuffix>.orm.xml</xmlMappingSuffix>
+        <xmlMappingSuffix>.hbm.xml</xmlMappingSuffix>
+      </xmlMappingSuffixes>
+      <packages>
+        <package>org.r7c.maven.tools.model.annotation</package>
+      </packages>
+      <dialects>
+        <dialect>org.hibernate.dialect.DerbyDialect</dialect>
+        <dialect>org.hibernate.dialect.H2Dialect</dialect>
+        <dialect>org.hibernate.dialect.MySQLDialect</dialect>
+        <dialect>org.hibernate.dialect.OracleDialect</dialect>
+        <dialect>org.hibernate.dialect.PostgreSQLDialect</dialect>
+      </dialects>
+    </configuration>
+    <dependencies>
+      <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc11</artifactId>
+        <version>21.8.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.5.1</version>
+      </dependency>
+    </dependencies>
+  </plugin>
   [...]
 </project>
 ----
+
+== Configurations
+
+The plugin is configured by specifying a <configuration> element with the following child elements.
+
+[cols="1,1,4"]
+|===
+| Property | Default value | Description
+
+| *outputDirectory*
+| ${project.build.directory}/generated-ddl
+| Folder where ddl scripts are generated. The script name is derived from hibernate dialect name (lower last part without Dialect) and properties
+*filenameSuffixCreate*, *filenameSuffixDrop*
+org.hibernate.dialect.**H2**Dialect. +
+Example: +
+- *dialect*: org.hibernate.dialect.**H2**Dialect. +
+- *filenameSuffixCreate*: -my.dll
+gives create script name:
+h2-my.dll
+
+| *filenameSuffixCreate*
+| .ddl
+| Filename suffix for create DDL script
+
+| *filenameSuffixDrop*
+| -drop.ddl
+| Filename suffix for drop DDL script
+
+| *xmlMappingDirectories*
+| ${project.resources[0].directory}/hbm/
+| Folder (relative path from project) where xml mappings (HBM or ORM XML mapping types) are located.
+Example:
+[source, xml]
+----
+<xmlMappingDirectories>
+  <xmlMappingDirectory>src/test/resources/hbm</xmlMappingDirectory>
+  <xmlMappingDirectory>src/test/resources/orm</xmlMappingDirectory>
+</xmlMappingDirectories>
+----
+
+| *xmlMappingSuffixes*
+| .hbm.xml
+| File mapping suffix list.
+Example:
+[source, xml]
+----
+<xmlMappingSuffixes>
+  <xmlMappingSuffix>.orm.xml</xmlMappingSuffix>
+  <xmlMappingSuffix>.hbm.xml</xmlMappingSuffix>
+</xmlMappingSuffixes>
+----
+
+| *dialects*
+| org.hibernate.dialect.DerbyDialect
+a| Hibernate dialects for the target databases! It is also recommended to add the JDBC database driver as a plugin dependency.
+Example:
+[source, xml]
+----
+<plugins>
+  <plugin>
+    <groupId>org.r7c.maven.tools</groupId>
+    <artifactId>ddlgen-maven-plugin</artifactId>
+    <version>1.0</version>
+    <configuration>
+      <dialects>
+        <dialect>org.hibernate.dialect.PostgreSQLDialect</dialect>
+      </dialects>
+    </configuration>
+    <dependencies>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgresql.version}</version>
+      </dependency>
+    </dependencies>
+  </plugin>
+</plugins>
+----
+
+| *packages*
+|
+a| packages for scanning the entity classes.
+Example:
+[source, xml]
+----
+<packages>
+  <package>org.example.model1</package>
+  <package>org.example.model2</package>
+</packages>
+----
+
+| *scriptFormat*
+| true
+| Enable/disable formatting of the script.
+
+| *scriptLineDelimiter*
+| ;
+| DDL Script command/line delimiter.
+
+| *auditTableSuffix*
+| _aud
+| Audit table suffixes for tables with enabed audit (see the: https://docs.jboss.org/envers/docs/:[Hibernate envers] )
+
+| *commentTemplate*
+a|
+....
+-- ------------------------------------\n" +
+"-- Script version: ${schemaVersion}\n" +
+"-- Application: ${application}\n" +
+"-- Date: ${generatedOn}\n\n")
+....
+| The script can have "header comment" to indicate application, version and create date of the script.
+
+
+| *schemaVersion*
+| ${project.version}
+| Schema version parameter used for the script header comment.
+
+| *application*
+| ${project.artifactId}
+|
+
+| *generatedOn*
+| ${maven.build.timestamp}
+|
+
+|===
 
 

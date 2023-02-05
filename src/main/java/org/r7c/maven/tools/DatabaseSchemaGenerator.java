@@ -2,7 +2,6 @@ package org.r7c.maven.tools;
 
 
 import jakarta.persistence.Entity;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -29,10 +28,14 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.apache.commons.lang3.StringUtils.*;
 
 /**
  * Goal which generates ddl files for given parameters .
@@ -44,6 +47,7 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
 
     public static final String PARAM_OUTPUT_DIR = "outputDirectory";
     public static final String PARAM_INPUT_MAPPING_DIRS = "xmlMappingDirectories";
+    public static final String PARAM_INPUT_MAPPING_SUFFIXES = "xmlMappingSuffixes";
     public static final String PARAM_DIALECTS = "dialects";
     public static final String PARAM_PACKAGES = "packages";
     public static final String PARAM_SCRIPT_FORMAT = "scriptFormat";
@@ -59,31 +63,26 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
 
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseSchemaGenerator.class);
 
-    /**
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
-     */
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
 
     /**
      * Location of the file.
      */
-    @Parameter(property = PARAM_OUTPUT_DIR, required = true, defaultValue = "${project.build.directory}")
+    @Parameter(property = PARAM_OUTPUT_DIR, required = true, defaultValue = "${project.build.directory}/generated-ddl")
     File outputDirectory;
     @Parameter(property = PARAM_INPUT_MAPPING_DIRS, required = true, defaultValue = "${project.resources[0].directory}/hbm/")
     List<File> xmlMappingDirectories;
+    @Parameter(property = PARAM_INPUT_MAPPING_SUFFIXES, defaultValue = ".hbm.xml")
+    List<String> xmlMappingSuffixes;
     @Parameter(property = PARAM_DIALECTS, required = true, defaultValue = "org.hibernate.dialect.DerbyDialect")
     List<String> dialects;
-
     @Parameter(property = PARAM_PACKAGES)
     List<String> packages;
     @Parameter(property = PARAM_SCRIPT_FORMAT, defaultValue = "true")
     Boolean scriptFormat;
     @Parameter(property = PARAM_SCRIPT_LINE_DELIMITER, defaultValue = ";")
     String scriptLineDelimiter;
-
     @Parameter(property = PARAM_TABLE_AUDIT_SUFFIX, defaultValue = "_aud")
     String auditTableSuffix;
     @Parameter(property = PARAM_FILENAME_SUFFIX_CREATE, required = true, defaultValue = ".ddl")
@@ -113,7 +112,7 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         // execute
         for (String dialect : dialects) {
             try {
-                createDDLScript(StringUtils.trim(dialect));
+                createDDLScript(trim(dialect));
             } catch (ClassNotFoundException e) {
                 throw new MojoExecutionException("Can not found annotation classes!", e);
             } catch (IOException e) {
@@ -137,18 +136,18 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
             throw new IllegalArgumentException("At least one package with entities or xml mapping directory must be set!");
         }
 
-        if (StringUtils.isBlank(filenameSuffixCreate)) {
+        if (isBlank(filenameSuffixCreate)) {
             throw new IllegalArgumentException("Create filename suffix must not be null!");
         }
 
-        if (StringUtils.isBlank(filenameSuffixDrop)) {
+        if (isBlank(filenameSuffixDrop)) {
             throw new IllegalArgumentException("Drop filename suffix must not be null!");
         }
     }
 
     public void createDDLScript(String hibernateDialect) throws ClassNotFoundException, IOException {
         // create export file
-        if (StringUtils.isNotBlank(auditTableSuffix)) {
+        if (isNotBlank(auditTableSuffix)) {
             System.setProperty("org.hibernate.envers.audit_table_suffix", auditTableSuffix);
         }
 
@@ -173,7 +172,7 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         // create schema exporter
         SchemaExport export = new SchemaExport();
         export.setFormat(scriptFormat);
-        if (StringUtils.isNotBlank(scriptLineDelimiter)) {
+        if (isNotBlank(scriptLineDelimiter)) {
             export.setDelimiter(scriptLineDelimiter);
         }
 
@@ -194,7 +193,6 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         String initialComment = getInitialComment();
 
         generateScript(export, SchemaExport.Action.CREATE, metadataImplementor, file, initialComment);
-
         generateScript(export, SchemaExport.Action.DROP, metadataImplementor, fileDrop, initialComment);
     }
 
@@ -205,11 +203,11 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
 
         for (File xmlMappingDirectory : xmlMappingDirectories) {
             Path myDirectoryPath = xmlMappingDirectory.toPath();
-            List<Path> subDirectories = Files.find(myDirectoryPath, Integer.MAX_VALUE,
-                    (filePath, fileAttr) ->
-                            fileAttr.isRegularFile() && (StringUtils.endsWithIgnoreCase(filePath.toFile().getName(), "hbm.xml")
-                            || StringUtils.endsWithIgnoreCase(filePath.toFile().getName(), "orm.xml"))
-                            && !filePath.equals(myDirectoryPath)).collect(Collectors.toList());
+            List<Path> subDirectories;
+            try (Stream<Path> pathStream = Files.find(myDirectoryPath, Integer.MAX_VALUE,
+                    this::matchMappingFile)) {
+                subDirectories = pathStream.collect(Collectors.toList());
+            }
 
             subDirectories.forEach(path -> {
                 LOG.debug("Add path [{}]", path);
@@ -220,6 +218,30 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
                 }
             });
         }
+    }
+
+    /**
+     * Method returns  true of the filename matches mapping suffix, else returns false.
+     *
+     * @param filePath
+     * @param fileAttr
+     * @return
+     */
+    public boolean matchMappingFile(Path filePath, BasicFileAttributes fileAttr) {
+        if (!fileAttr.isRegularFile()) {
+            LOG.debug("File [{}] is not regular file!", filePath);
+            return false;
+        }
+
+        if (xmlMappingSuffixes == null || xmlMappingSuffixes.isEmpty()) {
+            LOG.debug("No XML mapping suffix defined!");
+            return false;
+        }
+        // set to lower case for comparing
+        String fileName = lowerCase(filePath.toFile().getName());
+        String[] suffixes = new String[xmlMappingSuffixes.size()];
+        Arrays.setAll(suffixes, i -> lowerCase(xmlMappingSuffixes.get(i)));
+        return endsWithAny(fileName, suffixes);
     }
 
     protected void setPackagesToMetadata(MetadataSources metadata) throws IOException, ClassNotFoundException {
@@ -242,7 +264,7 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
                                   File outputFile,
                                   String initialComment) throws IOException {
         //chan change the output
-        if (StringUtils.isNotBlank(initialComment)) {
+        if (isNotBlank(initialComment)) {
             Files.write(outputFile.toPath(), initialComment.getBytes(), StandardOpenOption.CREATE);
         }
         export.setOutputFile(outputFile.getAbsolutePath());
@@ -251,11 +273,11 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
     }
 
     protected String getInitialComment() {
-        if (StringUtils.isNotBlank(commentTemplate)) {
+        if (isNotBlank(commentTemplate)) {
             if (generatedOn == null) {
                 generatedOn = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
             }
-            return StringUtils.replaceEachRepeatedly(commentTemplate, new String[]
+            return replaceEachRepeatedly(commentTemplate, new String[]
                             {"${schemaVersion}", "${generatedOn}", "${application}"},
                     new String[]{schemaVersion, generatedOn, application});
         }
@@ -317,8 +339,8 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
      */
     public List<Class> getAllEntityClasses(String packageNameValue) throws ClassNotFoundException, IOException {
         LOG.debug("Get all classes from the package: [{}]", packageNameValue);
-        String packageName = StringUtils.trim(packageNameValue);
-        if (StringUtils.isBlank(packageName)) {
+        String packageName = trim(packageNameValue);
+        if (isBlank(packageName)) {
             LOG.warn("Empty package names are skipped !");
             return Collections.emptyList();
         }

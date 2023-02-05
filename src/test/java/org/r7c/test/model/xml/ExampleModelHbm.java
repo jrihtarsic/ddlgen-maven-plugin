@@ -1,4 +1,4 @@
-package org.r7c.testl.model.xml;
+package org.r7c.test.model.xml;
 
 import java.math.BigInteger;
 

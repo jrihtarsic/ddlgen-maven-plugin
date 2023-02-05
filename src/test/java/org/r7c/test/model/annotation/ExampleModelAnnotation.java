@@ -1,4 +1,4 @@
-package org.r7c.testl.model.annotation;
+package org.r7c.test.model.annotation;
 
 import jakarta.persistence.*;
 
