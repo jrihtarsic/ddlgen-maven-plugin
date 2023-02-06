@@ -48,19 +48,61 @@ import static org.apache.commons.lang3.StringUtils.*;
         threadSafe = true)
 public class DatabaseSchemaGenerator extends AbstractMojo {
 
+    /**
+     * property name outputDirectory
+     */
     public static final String PARAM_OUTPUT_DIR = "outputDirectory";
+    /**
+     * property name xmlMappingDirectories
+     */
     public static final String PARAM_INPUT_MAPPING_DIRS = "xmlMappingDirectories";
+    /**
+     * property name xmlMappingSuffixes
+     */
     public static final String PARAM_INPUT_MAPPING_SUFFIXES = "xmlMappingSuffixes";
+    /**
+     * property name dialects
+     */
     public static final String PARAM_DIALECTS = "dialects";
+    /**
+     * property name packages
+     */
     public static final String PARAM_PACKAGES = "packages";
+    /**
+     * property name scriptFormat
+     */
     public static final String PARAM_SCRIPT_FORMAT = "scriptFormat";
+    /**
+     * property name scriptLineDelimiter
+     */
     public static final String PARAM_SCRIPT_LINE_DELIMITER = "scriptLineDelimiter";
+    /**
+     * property name auditTableSuffix
+     */
     public static final String PARAM_TABLE_AUDIT_SUFFIX = "auditTableSuffix";
+    /**
+     * property name filenameSuffixCreate
+     */
     public static final String PARAM_FILENAME_SUFFIX_CREATE = "filenameSuffixCreate";
+    /**
+     * property name filenameSuffixDrop
+     */
     public static final String PARAM_FILENAME_SUFFIX_DROP = "filenameSuffixDrop";
+    /**
+     * property name commentTemplate
+     */
     public static final String PARAM_COMMENT_TEMPLATE = "commentTemplate";
+    /**
+     * property name schemaVersion
+     */
     public static final String PARAM_SCHEMA_VERSION = "schemaVersion";
+    /**
+     * property name application
+    */
     public static final String PARAM_APPLICATION = "application";
+    /**
+     * property name generatedOn
+     */
     public static final String PARAM_GENERATED_DATE = "generatedOn";
 
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseSchemaGenerator.class);
@@ -195,6 +237,12 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         }
     }
 
+    /**
+     * Create databases scripts for the dialect
+     * @param hibernateDialect hibernate database dialect
+     * @throws ClassNotFoundException is thrown when class not found
+     * @throws IOException is thrown when resources can not be read.
+     */
     public void createDDLScript(String hibernateDialect) throws ClassNotFoundException, IOException {
         // create export file
         if (isNotBlank(auditTableSuffix)) {
@@ -246,6 +294,12 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         generateScript(export, SchemaExport.Action.DROP, metadataImplementor, fileDrop, initialComment);
     }
 
+    /**
+     * Add mappings files to hibernate metadata sources
+     *
+     * @param metadata hibernate metadata
+     * @throws IOException when it can not read the soources
+     */
     protected void setMappingsToMetadata(MetadataSources metadata) throws IOException {
         if (xmlMappingDirectories == null) {
             LOG.debug("No mappings folders defined!");
@@ -338,6 +392,10 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         export.execute(enumSet, action, metadataImplementor);
     }
 
+    /**
+     * Generate header comment for the scripts
+     * @return comment text
+     */
     protected String getInitialComment() {
         if (isNotBlank(commentTemplate)) {
             if (generatedOn == null) {
