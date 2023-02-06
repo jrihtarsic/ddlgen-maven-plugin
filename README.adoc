@@ -1,8 +1,15 @@
+
 = Database schema generator maven plugin
 Rihtarsic Joze
 1.0, 12.12.2022: Initial documentation
-:toc:
 :icons: font
+:toc:
+
+== Build badges
+
+image::https://github.com/jrihtarsic/ddlgen-maven-plugin/workflows/Java%20CI/badge.svg[Java CI]
+
+
 
 ==  Database Schema Generator Maven Plugin
 
