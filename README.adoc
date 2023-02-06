@@ -8,13 +8,13 @@ Rihtarsic Joze
 == Build badges
 
 image::https://github.com/jrihtarsic/ddlgen-maven-plugin/workflows/Java%20CI/badge.svg[Java CI]
-[%autowidth, cols="a,a", frame=none, grid=none, role="center"]
+[%autowidth, cols="a,a,a,a", frame=none, grid=none, role="center"]
 |===
-|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=sqale_rating[Sonar Maintability Rating]
-|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=reliability_rating[Sonar Reliability Rating]
-|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=security_rating[Sonar Security Rating]
-|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=bugs[Sonar Bugs Count]
-|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=vulnerabilities[Sonar Vulnerabilities Count]
+|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=sqale_rating[Sonar Maintability Rating,link="https://sonarcloud.io/dashboard?id=jrihtarsic_ddlgen-maven-plugin"]
+|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=reliability_rating[Sonar Reliability Rating,link="https://sonarcloud.io/dashboard?id=jrihtarsic_ddlgen-maven-plugin"]
+|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=security_rating[Sonar Security Rating,link="https://sonarcloud.io/dashboard?id=jrihtarsic_ddlgen-maven-plugin"]
+|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=bugs[Sonar Bugs Count,link="https://sonarcloud.io/dashboard?id=jrihtarsic_ddlgen-maven-plugin"]
+|image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=vulnerabilities[Sonar Vulnerabilities Count,link="https://sonarcloud.io/dashboard?id=jrihtarsic_ddlgen-maven-plugin"]
 |===
 
 https://sonarcloud.io/dashboard?id=jrihtarsic_ddlgen-maven-plugin
