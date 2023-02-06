@@ -38,7 +38,10 @@ import java.util.stream.Stream;
 import static org.apache.commons.lang3.StringUtils.*;
 
 /**
- * Goal which generates ddl files for given parameters .
+ * Maven Mojo plugin execution implementation with goal to generate database DDL scripts.
+ *
+ * @since 1.0
+ * @author  Joze Rihtasic
  */
 @Mojo(name = "generate-ddl", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES,
         requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME,
@@ -55,7 +58,6 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
     public static final String PARAM_TABLE_AUDIT_SUFFIX = "auditTableSuffix";
     public static final String PARAM_FILENAME_SUFFIX_CREATE = "filenameSuffixCreate";
     public static final String PARAM_FILENAME_SUFFIX_DROP = "filenameSuffixDrop";
-
     public static final String PARAM_COMMENT_TEMPLATE = "commentTemplate";
     public static final String PARAM_SCHEMA_VERSION = "schemaVersion";
     public static final String PARAM_APPLICATION = "application";
@@ -63,43 +65,88 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
 
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseSchemaGenerator.class);
 
+    /**
+     * Default project property
+     */
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
 
+
     /**
-     * Location of the file.
+     *  Folder where ddl scripts are generated. The script name is derived from hibernate dialect name (lower last part without Dialect) and properties
+     *  Example: ${project.build.directory}/generated-ddl
      */
     @Parameter(property = PARAM_OUTPUT_DIR, required = true, defaultValue = "${project.build.directory}/generated-ddl")
     File outputDirectory;
+    /** Folder (relative path from project) where xml mappings (HBM or ORM XML mapping types) are located.
+     * Example: ${project.resources[0].directory}/hbm/
+     */
     @Parameter(property = PARAM_INPUT_MAPPING_DIRS, required = true, defaultValue = "${project.resources[0].directory}/hbm/")
     List<File> xmlMappingDirectories;
+    /** File mapping suffix list.
+     * Example: .hbm.xml
+     */
     @Parameter(property = PARAM_INPUT_MAPPING_SUFFIXES, defaultValue = ".hbm.xml")
     List<String> xmlMappingSuffixes;
+    /** Hibernate dialects for the target databases! It is also recommended to add the JDBC database driver as a plugin dependency.
+     * Example:org.hibernate.dialect.DerbyDialect
+     */
     @Parameter(property = PARAM_DIALECTS, required = true, defaultValue = "org.hibernate.dialect.DerbyDialect")
     List<String> dialects;
+    /** Packages for scanning the entity classes.
+     * Example: org.example.model
+     */
     @Parameter(property = PARAM_PACKAGES)
     List<String> packages;
+    /**  Enable/disable formatting of the script (Boolean value: true - to enable, false - to disable).
+     * Example: true
+     */
     @Parameter(property = PARAM_SCRIPT_FORMAT, defaultValue = "true")
     Boolean scriptFormat;
+    /** DDL Script command/line delimiter on the end of ddl command as example for ';':  SELECT * FROM MY_TABLE;
+     * Example: ;
+     */
     @Parameter(property = PARAM_SCRIPT_LINE_DELIMITER, defaultValue = ";")
     String scriptLineDelimiter;
-    @Parameter(property = PARAM_TABLE_AUDIT_SUFFIX, defaultValue = "_aud")
+    /** Audit table suffixes for tables with enabled audit (see the: https://docs.jboss.org/envers/docs/)
+     * Example: _AUD ;
+     */
+    @Parameter(property = PARAM_TABLE_AUDIT_SUFFIX, defaultValue = "_AUD")
     String auditTableSuffix;
+    /** Filename suffix for create DDL script name.
+     * Example: .ddl
+     */
     @Parameter(property = PARAM_FILENAME_SUFFIX_CREATE, required = true, defaultValue = ".ddl")
     String filenameSuffixCreate;
+    /** Filename suffix for drop DDL script name.
+     * Example: -drop.ddl
+     */
     @Parameter(property = PARAM_FILENAME_SUFFIX_DROP, required = true, defaultValue = "-drop.ddl")
     String filenameSuffixDrop;
-
+    /** The script "header comment" to indicate application, version and create date of the script.
+     * Example: <code>-- ------------------------------------\n
+     * -- Script version: ${schemaVersion}\n
+     * -- Application: ${application}\n
+     * -- Date: ${generatedOn}\n\n"</code>
+     */
     @Parameter(property = PARAM_COMMENT_TEMPLATE, defaultValue = "-- ------------------------------------\n" +
             "-- Script version: ${schemaVersion}\n" +
             "-- Application: ${application}\n" +
             "-- Date: ${generatedOn}\n\n")
     String commentTemplate;
-
+    /** Schema version parameter used for the script header comment.
+     * Example: ${project.version}
+     */
     @Parameter(property = PARAM_SCHEMA_VERSION, defaultValue = "${project.version}")
     String schemaVersion;
+    /** Application name parameter used for the script header comment.
+     * Example: ${project.artifactId}
+     */
     @Parameter(property = PARAM_APPLICATION, defaultValue = "${project.artifactId}")
     String application;
+    /** Script date parameter used for the script header comment.
+     * Example: ${maven.build.timestamp}
+     */
     @Parameter(property = PARAM_GENERATED_DATE, defaultValue = "${maven.build.timestamp}")
     String generatedOn;
 
@@ -121,6 +168,9 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         }
     }
 
+    /**
+     * Validate plugin configuration parameters
+     */
     public void validateParameters() {
         File fOutputDir = outputDirectory;
         if (!fOutputDir.exists()) {
@@ -223,9 +273,9 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
     /**
      * Method returns  true of the filename matches mapping suffix, else returns false.
      *
-     * @param filePath
-     * @param fileAttr
-     * @return
+     * @param filePath file math to validate the match with mapping xml file name.
+     * @param fileAttr file attributes
+     * @return true if file is xml mapping, else false
      */
     public boolean matchMappingFile(Path filePath, BasicFileAttributes fileAttr) {
         if (!fileAttr.isRegularFile()) {
@@ -244,6 +294,13 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         return endsWithAny(fileName, suffixes);
     }
 
+    /**
+     *  Set package classes to metadata sources
+     * @param metadata hibernate MetadataSources for reading the Entity classes
+     * @throws IOException when read sources fails
+     * @throws ClassNotFoundException  when no class found
+     */
+
     protected void setPackagesToMetadata(MetadataSources metadata) throws IOException, ClassNotFoundException {
         if (packages == null) {
             LOG.debug("No packages defined!");
@@ -258,6 +315,15 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         }
     }
 
+    /**
+     *  Generate script
+     * @param export script export folder
+     * @param action hibernate export action   NONE, CREATE, DROP, BOTH;
+     * @param metadataImplementor Hibernate metadataImplementor
+     * @param outputFile output file
+     * @param initialComment inital comment added to script header
+     * @throws IOException  when read sources fails
+     */
     protected void generateScript(SchemaExport export,
                                   SchemaExport.Action action,
                                   MetadataImplementor metadataImplementor,
@@ -286,16 +352,21 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
 
 
     /**
-     * Method creates filename based on dialect and version
+     * Method returns create filename based on dialect and version
      *
-     * @param dialect
-     * @return file name.
+     * @param dialect hibernate dialect name
+     * @return file name derived from dialect.
      */
     public String createFileName(String dialect) {
         String dbName = dialect.substring(dialect.lastIndexOf('.') + 1, dialect.lastIndexOf("Dialect")).toLowerCase();
         return dbName + filenameSuffixCreate;
     }
-
+    /**
+     * Method returns drop  filename based on dialect and version
+     *
+     * @param dialect hibernate dialect name
+     * @return file name derived from dialect.
+     */
     public String createDropFileName(String dialect) {
         String dbName = dialect.substring(dialect.lastIndexOf('.') + 1, dialect.lastIndexOf("Dialect")).toLowerCase();
         return dbName + filenameSuffixDrop;
@@ -331,11 +402,12 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
 
     /***
      * Returns list of classes with entity annotations in package and subpackages.
-     * @param packageNameValue
-     * @return
+     * @param packageNameValue package name with  entity classes
+     * @return list for entity classes
+     * @throws ClassNotFoundException when not entity classes found
+     * @throws IOException on resource read failure
      *
-     * Method source
-     * https://dzone.com/articles/get-all-classes-within-package
+     * See: Method source https://dzone.com/articles/get-all-classes-within-package
      */
     public List<Class> getAllEntityClasses(String packageNameValue) throws ClassNotFoundException, IOException {
         LOG.debug("Get all classes from the package: [{}]", packageNameValue);
@@ -366,6 +438,13 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         return classes;
     }
 
+    /**
+     * Find entity classes in the give package
+     * @param directory with jars
+     * @param packageName package name
+     * @return List of Entity classes
+     * @throws ClassNotFoundException
+     */
     private List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         List<Class> classes = new ArrayList<>();

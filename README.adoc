@@ -121,11 +121,11 @@ h2-my.dll
 
 | *filenameSuffixCreate*
 | .ddl
-| Filename suffix for create DDL script
+| Filename suffix for create DDL script name.
 
 | *filenameSuffixDrop*
 | -drop.ddl
-| Filename suffix for drop DDL script
+| Filename suffix for drop DDL script name.
 
 | *xmlMappingDirectories*
 | ${project.resources[0].directory}/hbm/
@@ -199,8 +199,8 @@ Example:
 | DDL Script command/line delimiter.
 
 | *auditTableSuffix*
-| _aud
-| Audit table suffixes for tables with enabed audit (see the: https://docs.jboss.org/envers/docs/:[Hibernate envers] )
+| _AUD
+| Audit table suffixes for tables with enabled audit (see the: https://docs.jboss.org/envers/docs/:[Hibernate envers] )
 
 | *commentTemplate*
 a|
@@ -219,11 +219,11 @@ a|
 
 | *application*
 | ${project.artifactId}
-|
+| Application name parameter used for the script header comment.
 
 | *generatedOn*
 | ${maven.build.timestamp}
-|
+| Script date parameter used for the script header comment.
 
 |===
 
