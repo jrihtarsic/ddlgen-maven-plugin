@@ -37,14 +37,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <maven.version>3.8.7</maven.version>
+        <!-- Plugin versions-->
+        <maven.version>3.9.0</maven.version>
         <maven-plugin-annotations.version>3.6.4</maven-plugin-annotations.version>
+        <maven-plugin-plugin.version>3.6.2</maven-plugin-plugin.version>
+        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.4.1</maven-javadoc-plugin.version>
+        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
+        <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
         <!-- Sonar  -->
         <sonar.organization>jrihtarsic</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <!-- dependencies -->
         <hibernate-core.version>6.1.6.Final</hibernate-core.version>
-        <jakarta.xml.bind-api.version>3.0.1</jakarta.xml.bind-api.version>
+        <jakarta.xml.bind-api.version>4.0.0</jakarta.xml.bind-api.version>
         <jaxb-impl.version>4.0.0</jaxb-impl.version>
         <slf4j-api.version>2.0.5</slf4j-api.version>
         <log4j-to-slf4j.version>2.19.0</log4j-to-slf4j.version>
@@ -52,9 +59,9 @@
         <org.apache.commons-lang3.version>3.12.0</org.apache.commons-lang3.version>
         <org.apache.maven.plugin-testing.version>3.3.0</org.apache.maven.plugin-testing.version>
         <junit.version>4.13.2</junit.version>
-        <derby.db.version>10.15.2.0</derby.db.version>
+        <derby.db.version>10.16.1.1</derby.db.version>
         <ojdbc11.version>21.8.0.0</ojdbc11.version>
-        <postgresql.version>42.5.1</postgresql.version>
+        <postgresql.version>42.5.3</postgresql.version>
     </properties>
 
     <dependencies>
@@ -168,40 +175,34 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <artifactId>maven-invoker-plugin</artifactId>
-                    <version>3.2.1</version>
-                </plugin>
-                <plugin>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.6.2</version>
+                    <version>${maven-plugin-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>${maven-source-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>${maven-javadoc-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>${maven-gpg-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
+                    <version>${nexus-staging-maven-plugin.version}</version>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.13</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.7</version>
+                    <version>${jacoco-maven-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
