@@ -50,7 +50,7 @@
         <sonar.organization>jrihtarsic</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <!-- dependencies -->
-        <hibernate-core.version>6.1.6.Final</hibernate-core.version>
+        <hibernate-core.version>6.1.7.Final</hibernate-core.version>
         <jakarta.xml.bind-api.version>4.0.0</jakarta.xml.bind-api.version>
         <jaxb-impl.version>4.0.0</jaxb-impl.version>
         <slf4j-api.version>2.0.5</slf4j-api.version>
