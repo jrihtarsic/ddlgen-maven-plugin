@@ -54,7 +54,7 @@
         <jakarta.xml.bind-api.version>4.0.0</jakarta.xml.bind-api.version>
         <jaxb-impl.version>4.0.2</jaxb-impl.version>
         <slf4j-api.version>2.0.6</slf4j-api.version>
-        <log4j-to-slf4j.version>2.19.0</log4j-to-slf4j.version>
+        <log4j-to-slf4j.version>2.20.0</log4j-to-slf4j.version>
         <logback-core.version>1.4.5</logback-core.version>
         <org.apache.commons-lang3.version>3.12.0</org.apache.commons-lang3.version>
         <org.apache.maven.plugin-testing.version>3.3.0</org.apache.maven.plugin-testing.version>
