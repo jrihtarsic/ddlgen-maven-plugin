@@ -21,7 +21,6 @@ public class DatabaseSchemaGeneratorTest extends AbstractMojoTestCase {
     private final File testPomFile = Paths.get("src", "test", "resources", "pom.xml").toFile();
 
     @Override
-    @Before
     public void setUp() throws Exception {
         super.setUp();
     }
@@ -38,7 +37,7 @@ public class DatabaseSchemaGeneratorTest extends AbstractMojoTestCase {
         assertNotNull(testPlugin);
         List<File> inputMappings = (List<File>) getVariableValueFromObject(testPlugin, PARAM_INPUT_MAPPING_DIRS);
         assertNotNull(inputMappings);
-        assertEquals(2, inputMappings.size());
+        assertEquals(1, inputMappings.size());
 
         List<String> dialects = (List<String>) getVariableValueFromObject(testPlugin, PARAM_DIALECTS);
         assertNotNull(dialects);
@@ -66,6 +65,8 @@ public class DatabaseSchemaGeneratorTest extends AbstractMojoTestCase {
     public void testGenerateDDLAssertExecute()
             throws Exception {
 
+      //  Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+
         DatabaseSchemaGenerator testPlugin = (DatabaseSchemaGenerator) lookupMojo("generate-ddl", testPomFile);
         testPlugin.execute();
         // validate output
@@ -81,8 +82,8 @@ public class DatabaseSchemaGeneratorTest extends AbstractMojoTestCase {
             assertTrue(fileCreate.exists());
             assertTrue(fileDrop.exists());
             // assert table names in create and drop script files
-            assertFileContainStrings(fileCreate, Arrays.asList("EXAMPLE_MODEL_ANNOTATION", "EXAMPLE_MODEL_HBM", "SIMPLE_MODEL_ORM"));
-            assertFileContainStrings(fileDrop, Arrays.asList("EXAMPLE_MODEL_ANNOTATION", "EXAMPLE_MODEL_HBM", "SIMPLE_MODEL_ORM"));
+            assertFileContainStrings(fileCreate, Arrays.asList("EXAMPLE_MODEL_ANNOTATION", "SIMPLE_MODEL_ORM"));
+            assertFileContainStrings(fileDrop, Arrays.asList("EXAMPLE_MODEL_ANNOTATION", "SIMPLE_MODEL_ORM"));
         }
     }
 

@@ -150,7 +150,7 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
      */
     @Parameter(property = PARAM_SCRIPT_LINE_DELIMITER, defaultValue = ";")
     String scriptLineDelimiter;
-    /** Audit table suffixes for tables with enabled audit (see the: https://docs.jboss.org/envers/docs/)
+    /** Audit table suffixes for tables with enabled audit (see the: <a href="https://docs.jboss.org/envers/docs/">Hibernate envers</a>)
      * Example: _AUD ;
      */
     @Parameter(property = PARAM_TABLE_AUDIT_SUFFIX, defaultValue = "_AUD")
@@ -215,8 +215,8 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
      */
     public void validateParameters() {
         File fOutputDir = outputDirectory;
-        if (!fOutputDir.exists()) {
-            fOutputDir.mkdirs();
+        if (!fOutputDir.exists() && !fOutputDir.mkdirs()) {
+            throw new IllegalArgumentException("Output directory [" + fOutputDir.getAbsolutePath() + "] can not be created!");
         }
 
         if (dialects == null || dialects.isEmpty()) {
@@ -254,7 +254,7 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
 
         // metadata source
         MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
-                .applySetting(AvailableSettings.URL, "jdbc:derby:memory:ddlgen;create=true") //  in-memory database because hibernate requires connection even if does not use it for script generation??.
+                .applySetting(AvailableSettings.JAKARTA_JDBC_URL, "jdbc:derby:memory:ddlgen;create=true") //  in-memory database because hibernate requires connection even if does not use it for script generation??.
                 .applySetting(AvailableSettings.DIALECT, hibernateDialect)
                 .applySetting(AvailableSettings.HBM2DDL_AUTO, "create")
                 .build());
@@ -362,8 +362,8 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
         // add annotated classes
         for (String pckName : packages) {
             // metadata.addPackage did not work... ??
-            List<Class> clsList = getAllEntityClasses(pckName);
-            for (Class clazz : clsList) {
+            List<Class<?> > clsList = getAllEntityClasses(pckName);
+            for (Class<?> clazz : clsList) {
                 metadata.addAnnotatedClass(clazz);
             }
         }
@@ -465,9 +465,9 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
      * @throws ClassNotFoundException when not entity classes found
      * @throws IOException on resource read failure
      *
-     * See: Method source https://dzone.com/articles/get-all-classes-within-package
+     * See: Method source <a href="https://dzone.com/articles/get-all-classes-within-package">Source</a>
      */
-    public List<Class> getAllEntityClasses(String packageNameValue) throws ClassNotFoundException, IOException {
+    public List<Class<?>> getAllEntityClasses(String packageNameValue) throws ClassNotFoundException, IOException {
         LOG.debug("Get all classes from the package: [{}]", packageNameValue);
         String packageName = trim(packageNameValue);
         if (isBlank(packageName)) {
@@ -488,7 +488,7 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
             LOG.warn("Package folder: [{}] does not exist! Package is skipped!", packageName);
             return Collections.emptyList();
         }
-        ArrayList<Class> classes = new ArrayList<>();
+        ArrayList<Class<?>> classes = new ArrayList<>();
         for (File directory : dirs) {
             classes.addAll(findClasses(directory, packageName));
         }
@@ -501,22 +501,25 @@ public class DatabaseSchemaGenerator extends AbstractMojo {
      * @param directory with jars
      * @param packageName package name
      * @return List of Entity classes
-     * @throws ClassNotFoundException
+     * @throws ClassNotFoundException  class not found
      */
-    private List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
+    private List<Class<?>> findClasses(File directory, String packageName) throws ClassNotFoundException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        List<Class> classes = new ArrayList<>();
+        List<Class<?>> classes = new ArrayList<>();
         if (!directory.exists()) {
             return classes;
         }
         File[] files = directory.listFiles();
+        if (files == null) {
+            return classes;
+        }
 
         for (File file : files) {
             if (file.isDirectory()) {
                 assert !file.getName().contains(".");
                 classes.addAll(findClasses(file, packageName + "." + file.getName()));
             } else if (file.getName().endsWith(".class")) {
-                Class clazz = classLoader.loadClass(packageName + '.' + file.getName().substring(0, file.getName().length() - 6));
+                Class<?> clazz = classLoader.loadClass(packageName + '.' + file.getName().substring(0, file.getName().length() - 6));
                 if (clazz.isAnnotationPresent(Entity.class)) {
                     classes.add(clazz);
                 }

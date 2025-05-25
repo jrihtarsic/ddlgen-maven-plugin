@@ -31,7 +31,6 @@
             <plugin>
                 <groupId>org.r7c.maven.tools</groupId>
                 <artifactId>ddlgen-maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
@@ -43,7 +42,6 @@
                     <!-- Specify the ddl-gen parameters -->
                     <outputDirectory>target/generated-ddl</outputDirectory>
                     <xmlMappingDirectories>
-                        <xmlMappingDirectory>src/test/resources/hbm</xmlMappingDirectory>
                         <xmlMappingDirectory>src/test/resources/orm</xmlMappingDirectory>
                     </xmlMappingDirectories>
                     <xmlMappingSuffixes>

@@ -4,7 +4,7 @@
     <groupId>org.r7c.maven.tools</groupId>
     <artifactId>ddlgen-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.0.0</version>
+    <version>2.0.0-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>This is a simple (hibernate-based) Maven plugin for generating a database DDL script.</description>
     <url>https://github.com/jrihtarsic/ddlgen-maven-plugin</url>
@@ -22,7 +22,6 @@
     </developers>
     <scm>
         <connection>scm:git:git://github.com/jrihtarsic/ddlgen-maven-plugin.git</connection>
-        <developerConnection>scm:git:ssh://github.com:jrihtarsic/ddlgen-maven-plugin.git</developerConnection>
         <url>http://github.com/jrihtarsic/ddlgen-maven-plugin/tree/master</url>
     </scm>
 
@@ -35,33 +34,34 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.version>3.9.9</maven.version>
         <!-- Plugin versions-->
-        <maven.version>3.9.0</maven.version>
-        <maven-plugin-annotations.version>3.8.1</maven-plugin-annotations.version>
-        <maven-plugin-plugin.version>3.7.1</maven-plugin-plugin.version>
-        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
-        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
-        <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+        <maven-plugin-annotations.version>3.15.1</maven-plugin-annotations.version>
+        <plugin.maven-plugin-plugin.version>3.15.1</plugin.maven-plugin-plugin.version>
+        <plugin.maven-source-plugin.version>3.3.1</plugin.maven-source-plugin.version>
+        <plugin.maven-javadoc-plugin.version>3.11.2</plugin.maven-javadoc-plugin.version>
+        <plugin.maven-gpg-plugin.version>3.2.7</plugin.maven-gpg-plugin.version>
+        <plugin.nexus-staging-maven-plugin.version>1.7.0</plugin.nexus-staging-maven-plugin.version>
+        <plugin.jacoco-maven-plugin.version>0.8.13</plugin.jacoco-maven-plugin.version>
+        <plugin.versions-maven-plugin.version>2.18.0</plugin.versions-maven-plugin.version>
         <!-- Sonar  -->
         <sonar.organization>jrihtarsic</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <!-- dependencies -->
-        <hibernate-core.version>6.1.7.Final</hibernate-core.version>
-        <jakarta.xml.bind-api.version>4.0.0</jakarta.xml.bind-api.version>
-        <jaxb-impl.version>4.0.2</jaxb-impl.version>
-        <slf4j-api.version>2.0.6</slf4j-api.version>
-        <log4j-to-slf4j.version>2.19.0</log4j-to-slf4j.version>
-        <logback-core.version>1.4.5</logback-core.version>
-        <org.apache.commons-lang3.version>3.12.0</org.apache.commons-lang3.version>
+        <hibernate-core.version>6.6.16.Final</hibernate-core.version>
+        <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
+        <jaxb-impl.version>4.0.5</jaxb-impl.version>
+        <slf4j-api.version>2.0.17</slf4j-api.version>
+        <log4j-to-slf4j.version>2.24.3</log4j-to-slf4j.version>
+        <logback-core.version>1.5.18</logback-core.version>
+        <org.apache.commons-lang3.version>3.17.0</org.apache.commons-lang3.version>
         <org.apache.maven.plugin-testing.version>3.3.0</org.apache.maven.plugin-testing.version>
-        <junit.version>4.13.2</junit.version>
+        <junit-jupiter.version>5.12.2</junit-jupiter.version>
         <derby.db.version>10.16.1.1</derby.db.version>
-        <ojdbc11.version>21.9.0.0</ojdbc11.version>
-        <postgresql.version>42.5.4</postgresql.version>
+        <ojdbc11.version>21.17.0.0</ojdbc11.version>
+        <postgresql.version>42.7.5</postgresql.version>
     </properties>
 
     <dependencies>
@@ -133,10 +133,16 @@
         </dependency>
         <!-- test dependencies -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
+        </dependency>
+        <!--JUnit Jupiter Engine tp run maven  JUnit 4 API  -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit-jupiter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -180,29 +186,34 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>${maven-plugin-plugin.version}</version>
+                    <version>${plugin.maven-plugin-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>${maven-source-plugin.version}</version>
+                    <version>${plugin.maven-source-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${maven-javadoc-plugin.version}</version>
+                    <version>${plugin.maven-javadoc-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>${maven-gpg-plugin.version}</version>
+                    <version>${plugin.maven-gpg-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
-                    <version>${nexus-staging-maven-plugin.version}</version>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>${plugin.nexus-staging-maven-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${jacoco-maven-plugin.version}</version>
+                    <version>${plugin.jacoco-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${plugin.versions-maven-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -240,6 +251,16 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <!--To update only bugfix versions mvn versions:update-properties -DallowSnapshots=false -DallowMajorUpdates=false -DallowMinorUpdates=false -->
+                <!--To update minor versions  mvn versions:update-properties -DallowSnapshots=false -DallowMajorUpdates=false  -->
+                <configuration>
+                    <!-- ignore non numeric versions!-->
+                    <ignoredVersions>(?i).*-(alpha|beta|m|rc)([-.]?\d+)?</ignoredVersions>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -297,6 +318,5 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 </project>

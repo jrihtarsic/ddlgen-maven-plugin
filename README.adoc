@@ -1,7 +1,8 @@
 
 = Database schema generator maven plugin
 Rihtarsic Joze
-1.0, 12.12.2022: Initial documentation
+1.1, 12.12.2022: Initial documentation
+1.2, 25.02.2025: Upgrade dependency versions, set target java version 17 and remove support for HBM XML mappings
 :icons: font
 :toc:
 
@@ -24,14 +25,14 @@ https://sonarcloud.io/dashboard?id=jrihtarsic_ddlgen-maven-plugin
 
 ==  Database Schema Generator Maven Plugin
 
-The purpose of the plugin is to generate database schema scripts from Java entity classes or from xml mappings (HBM or ORM).
+The purpose of the plugin is to generate database schema scripts from Java entity classes or from xml mappings (ORM).
 The Plugin is based on Hibernate ORM and can generate database schemas for all supported hibernate database dialects!
 
 ===   Goals Overview
 
 The Clean Plugin only has one goal.
 
- - *generate-ddl*: attempts to generate database schema DDL scripts from a project's JPA entity classes, hibernate XML HBM files, or JPA entity mapping files.
+ - *generate-ddl*: attempts to generate database schema DDL scripts from a project's JPA entity classes or JPA entity mapping files.
 
 ===  Usage
 
@@ -41,9 +42,9 @@ The Plugin, as the name implies, attempts to generate the database DDL script fi
 ==== Cleaning a Maven project using the command-line
 
 The Plugin can be called to execute in the command-line without any additional configurations. By default, it generated DDL scripts
-from *.hbm.xml and *.orm.xml placed in resource folder:
+from *.orm.xml placed in resource folder:
 
-  ${project.resources[0].directory}/shared/hbm/
+  ${project.resources[0].directory}/shared/orm/
 
 The default database dialect is set to:
 
@@ -71,7 +72,7 @@ Below is a sample pom.xml for running the Plugin everytime the project is built:
   <plugin>
     <groupId>org.r7c.maven.tools.tools</groupId>
     <artifactId>ddlgen-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <executions>
       <execution>
         <goals>
@@ -83,12 +84,10 @@ Below is a sample pom.xml for running the Plugin everytime the project is built:
       <!-- Specify the ddl-gen parameters -->
       <outputDirectory>target/generated-ddl</outputDirectory>
       <xmlMappingDirectories>
-        <xmlMappingDirectory>src/main/resources/hbm</xmlMappingDirectory>
         <xmlMappingDirectory>src/main/resources/orm</xmlMappingDirectory>
       </xmlMappingDirectories>
       <xmlMappingSuffixes>
         <xmlMappingSuffix>.orm.xml</xmlMappingSuffix>
-        <xmlMappingSuffix>.hbm.xml</xmlMappingSuffix>
       </xmlMappingSuffixes>
       <packages>
         <package>org.r7c.maven.tools.model.annotation</package>
@@ -146,26 +145,24 @@ h2-my.dll
 | Filename suffix for drop DDL script name.
 
 | *xmlMappingDirectories*
-| ${project.resources[0].directory}/hbm/
-| Folder (relative path from project) where xml mappings (HBM or ORM XML mapping types) are located.
+| ${project.resources[0].directory}/orm/
+| Folder (relative path from project) where xml mappings (ORM XML mapping types) are located.
 Example:
 [source, xml]
 ----
 <xmlMappingDirectories>
-  <xmlMappingDirectory>src/test/resources/hbm</xmlMappingDirectory>
   <xmlMappingDirectory>src/test/resources/orm</xmlMappingDirectory>
 </xmlMappingDirectories>
 ----
 
 | *xmlMappingSuffixes*
-| .hbm.xml
+| .orm.xml
 | File mapping suffix list.
 Example:
 [source, xml]
 ----
 <xmlMappingSuffixes>
   <xmlMappingSuffix>.orm.xml</xmlMappingSuffix>
-  <xmlMappingSuffix>.hbm.xml</xmlMappingSuffix>
 </xmlMappingSuffixes>
 ----
 
