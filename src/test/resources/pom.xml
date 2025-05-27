@@ -46,7 +46,6 @@
                     </xmlMappingDirectories>
                     <xmlMappingSuffixes>
                         <xmlMappingSuffix>.orm.xml</xmlMappingSuffix>
-                        <xmlMappingSuffix>.hbm.xml</xmlMappingSuffix>
                     </xmlMappingSuffixes>
                     <packages>
                         <package>org.r7c.test.model.annotation</package>

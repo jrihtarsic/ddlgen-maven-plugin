@@ -18,6 +18,9 @@ image::https://github.com/jrihtarsic/ddlgen-maven-plugin/workflows/Java%20CI/bad
 |image::https://sonarcloud.io/api/project_badges/measure?project=jrihtarsic_ddlgen-maven-plugin&metric=vulnerabilities[Sonar Vulnerabilities Count,link="https://sonarcloud.io/dashboard?id=jrihtarsic_ddlgen-maven-plugin"]
 |===
 
+image::https://img.shields.io/maven-central/v/org.r7c.maven.tools/ddlgen-maven-plugin.svg?label=Maven%20Central[link="https://search.maven.org/artifact/org.r7c.maven.tools/ddlgen-maven-plugin"]
+
+
 https://sonarcloud.io/dashboard?id=jrihtarsic_ddlgen-maven-plugin
 
 
