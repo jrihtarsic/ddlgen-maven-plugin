@@ -54,7 +54,7 @@
         <logback-core.version>1.5.18</logback-core.version>
         <org.apache.commons-lang3.version>3.17.0</org.apache.commons-lang3.version>
         <org.apache.maven.plugin-testing.version>3.3.0</org.apache.maven.plugin-testing.version>
-        <junit-jupiter.version>5.12.2</junit-jupiter.version>
+        <junit-jupiter.version>5.13.0</junit-jupiter.version>
         <derby.db.version>10.16.1.1</derby.db.version>
         <ojdbc11.version>23.8.0.25.04</ojdbc11.version>
         <postgresql.version>42.7.5</postgresql.version>
