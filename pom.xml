@@ -52,7 +52,7 @@
         <slf4j-api.version>2.0.17</slf4j-api.version>
         <log4j-to-slf4j.version>2.24.3</log4j-to-slf4j.version>
         <logback-core.version>1.5.18</logback-core.version>
-        <org.apache.commons-lang3.version>3.17.0</org.apache.commons-lang3.version>
+        <org.apache.commons-lang3.version>3.19.0</org.apache.commons-lang3.version>
         <org.apache.maven.plugin-testing.version>3.3.0</org.apache.maven.plugin-testing.version>
         <junit-jupiter.version>5.12.2</junit-jupiter.version>
         <derby.db.version>10.16.1.1</derby.db.version>
